@@ -1,0 +1,1 @@
+# shapez2-monochrome-generator
