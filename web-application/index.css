@@ -1,0 +1,551 @@
+* {
+	font-family: "Times New Roman", serif;
+	&::selection {
+		background: var(--color);
+		color: var(--background-color);
+	}
+}
+:root {
+	--background-color: #FFF;
+	--color: #222;
+	--horizontal-padding-size: 1.25em;
+	--vertical-padding-size: 1em;
+	--hatch-thickness: 0.175em;
+	--body-min-width: 750px;
+	--body-max-width: 900px;
+	--page-min-width: 900px;
+}
+html {
+	font-size: 20px;
+	min-width: var(--page-min-width);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+body {
+	background: var(--background-color);
+	padding-bottom: 2.5rem;
+	color: var(--color);
+	display: flex;
+	flex-direction: column;
+	width: clamp(var(--body-min-width), 60%, var(--body-max-width));
+}
+a {
+	color: var(--color);
+	font-style: italic;
+}
+h1 {
+	text-align: justify;
+	font-weight: bold;
+	font-size: 2rem;
+	word-break: break-word;
+	hyphens: auto;
+	&::before {
+		content: "▘";
+	}
+	& a {
+		text-decoration: none;
+		background: linear-gradient(var(--color)) no-repeat;
+		background-size: 0 0.1em;
+		background-position: left bottom;
+		transition: background-size 0.25s ease-in-out;
+		&:hover { background-size: 100% 0.1em; }
+	}
+}
+h2 {
+	text-align: justify;
+	font-weight: bold;
+	font-size: 1.5rem;
+	margin-block-start: 0.5rem;
+	margin-block-end: 0.5rem;
+}
+hr {
+	width: 100%;
+	border-color: #888A transparent transparent transparent;
+}
+p {
+	text-align: justify;
+	font-weight: light;
+	font-size: 1rem;
+	margin-block-start: 0.5rem;
+	margin-block-end: 0.5rem;
+}
+button {
+	background: var(--color);
+	color: var(--background-color);
+	border: none;
+	outline: none;
+	cursor: pointer;
+	font-size: 0.9rem;
+	padding: 0.25rem 0.5rem;
+	height: 1.6rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	user-select: none;
+	&:not(:disabled):hover {
+		background: hsl(from var(--color) h s calc(l + 0.25 * (50 - l)));
+	}
+	&:not(:disabled):active {
+		background: hsl(from var(--color) h s calc(l + 0.15 * (50 - l)));
+	}
+	&:disabled {
+		color: #888A;
+		cursor: default;
+	}
+}
+.button-splitter {
+	height: 1.6rem;
+	width: 0.5px;
+	background: var(--color);
+	&::before {
+		content: "";
+		position: absolute;
+		width: 0.5px;
+		height: 1.2rem;
+		margin-top: 0.2rem;
+		background: #8888;
+	}
+}
+input:not([type="checkbox"]) {
+	height: 1.6rem;
+	border: none;
+	outline: none;
+	padding: 0 0.4rem;
+	font-size: 1rem;
+	color: var(--color);
+	background: var(--background-color);
+	box-shadow: inset var(--color) 0 -0.15rem;
+	&::placeholder {
+		user-select: none;
+		font-size: 0.95em;
+		color: #888B;
+	}
+}
+input[type="number"] {
+	flex-grow: 1;
+	height: 1.6rem;
+	border: none;
+	outline: none;
+	padding: 0;
+	text-indent: 0.25rem;
+	width: 5rem;
+	font-size: 1rem;
+	color: var(--color);
+	background: var(--background-color);
+	box-shadow: inset var(--color) 0 -0.15rem;
+	&::placeholder {
+		user-select: none;
+		text-align: center;
+	}
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+input[type="checkbox"] {
+	height: var(--size);
+	width: var(--size);
+	margin: 0;
+	cursor: pointer;
+}
+@property --checkbox-checking-progress {
+	syntax: "<percentage>";
+	inherits: true;
+	initial-value: 0%;
+}
+@keyframes checkbox-check {
+	to {
+		--checkbox-checking-progress: 100%;
+	}
+}
+.checkbox-wrapper {
+	--size: 1.2rem;
+	display: flex;
+	width: var(--size);
+	height: var(--size);
+	margin-right: 0.75rem;
+	&::before {
+		content: "";
+		box-sizing: border-box;
+		border: var(--color) solid 0.15rem;
+		position: absolute;
+		pointer-events: none;
+		width: var(--size);
+		height: var(--size);
+	}
+	&:has(:not(:checked))::before {
+		background: var(--background-color);
+	}
+	&:has(:checked)::before {
+		background: var(--color);
+	}
+	&::after {
+		--checkbox-checking-progress: 0%;
+		content: "";
+		mask-image: conic-gradient(
+			at calc(100% - 0.175rem) calc(100% - 0.175rem),
+			white 0deg,
+			white 270deg,
+			transparent 270deg,
+			transparent 360deg
+		);
+		background: linear-gradient(
+			45deg,
+			var(--background-color) var(--checkbox-checking-progress),
+			transparent var(--checkbox-checking-progress),
+			transparent 100%
+		);
+		position: absolute;
+		pointer-events: none;
+		width: calc(var(--size) / 2.5);
+		height: calc(var(--size) / 1.5);
+		margin-left: calc(var(--size) / 3.1);
+		margin-top: calc(var(--size) / 16);
+		transform: rotate(45deg);
+	}
+	&:has(:checked)::after {
+		animation: checkbox-check 0.3s forwards;
+	}
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+textarea {
+	min-height: 3.5rem;
+	border: var(--color) solid;
+	border-width: 0 0 0.15rem 0;
+	outline: none;
+	padding: 0.25rem 0.25rem 0.25rem 0.9rem;
+	font-size: 0.95rem;
+	color: var(--color);
+	background: var(--background-color);
+	box-shadow: inset var(--color) 0.5rem 0;
+	&::placeholder {
+		user-select: none;
+		font-size: 1em;
+		color: #888B;
+	}
+}
+div.panel {
+	background: #88888820;
+	margin-block-start: 0.75rem;
+	margin-block-end: 0.75rem;
+	padding: var(--vertical-padding-size) var(--horizontal-padding-size);
+	display: flex;
+	flex-direction: column;
+	/* TODO: & > * {
+		margin: 0.3rem 0;
+	} */
+}
+div.panel > header:first-child {
+	display: block;
+	margin: calc(0px - var(--vertical-padding-size)) 0 var(--vertical-padding-size) calc(0px - var(--horizontal-padding-size));
+	line-height: 1.3em;
+	text-indent: 0.5em;
+	width: calc(100% + var(--horizontal-padding-size) * 2);
+	height: 1.4em;
+	background-color: var(--color);
+	color: var(--background-color);
+	font-weight: bold;
+	user-select: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	& + p {
+		margin-block-start: -0.15rem;
+	}
+	& + .panel-item {
+		margin-top: 0;
+	}
+}
+div.panel label {
+	user-select: none;
+	align-self: center;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+div.panel > label {
+	margin-block-start: -0.5rem;
+	margin-block-end: 0.5rem;
+}
+div.panel p {
+	font-size: 0.85rem;
+	margin-block-start: 0.5em;
+	margin-block-end: 0.5em;
+	color: rgba(from var(--color) r g b / 80%);
+	&:first-child {
+		margin-block-start: -0.15rem;
+	}
+	&:last-child {
+		margin-block-end: -0.15rem;
+	}
+}
+div.panel-item {
+	display: flex;
+	flex-direction: row;
+	margin: 0.3rem 0;
+	&:not(:has(> :nth-child(2))) > * {
+		flex-grow: 1;
+	}
+	&:has(> :nth-child(2)) {
+		justify-content: space-between;
+	}
+	&:first-child {
+		margin-top: 0;
+	}
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+div.textarea-wrapper {
+	display: flex;
+	flex-direction: column;
+	&::after {
+		--size: 1.25rem;
+		content: "";
+		margin-bottom: calc(0px - var(--size));
+		pointer-events: none;
+		position: relative;
+		z-index: 1;
+		left: calc(100% - var(--size));
+		bottom: var(--size);
+		width: var(--size);
+		height: var(--size);
+		background: conic-gradient(
+			at right top,
+			transparent 180deg,
+			var(--color) 180deg,
+			var(--color) 225deg,
+			transparent 225deg
+		);
+	}
+}
+div.horizontal-group {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+.theme-toggle {
+	--size: 1em;
+	--thickness: 0.25em;
+	--top: 8em;
+	--right: 3em;
+	--hover-increment: 0.5em;
+	--press-increment: 2em;
+	position: fixed;
+	z-index: 1;
+	cursor: pointer;
+	width: var(--size);
+	height: var(--size);
+	top: var(--top);
+	right: var(--right);
+	background: var(--color);
+	box-shadow: rgba(from var(--color) r g b / 20%) 0 0 0 calc(var(--size) / 2.5);
+	border-radius: calc(infinity * 1px);
+	transition: top 0.1s ease-in-out;
+	&::before {
+		content: "";
+		position: absolute;
+		width: var(--thickness);
+		height: calc(var(--top) + var(--size) + var(--press-increment));
+		left: calc((var(--size) - var(--thickness)) / 2);
+		bottom: calc(var(--size) / 2);
+		background: linear-gradient(transparent, var(--color));
+	}
+	&::after {
+		content: "";
+		position: absolute;
+		width: var(--size);
+		height: calc(var(--top) + var(--size) + var(--press-increment));
+		left: 0;
+		bottom: calc(var(--size) / 2);
+		background: transparent;
+	}
+	&:hover {
+		top: calc(var(--top) + var(--hover-increment));
+	}
+	&:active {
+		top: calc(var(--top) + var(--press-increment));
+	}
+}
+div.catalog-toggle {
+	position: fixed;
+	z-index: 1;
+	top: 0;
+	left: 0;
+	width: 2.5rem;
+	height: 2.5rem;
+	margin: -1.25rem;
+	cursor: pointer;
+	background: var(--color);
+	transform: rotate(45deg);
+}
+div.catalog-sidebar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 17.5%;
+	height: calc(100vh + 5rem);
+	background: var(--background-color);
+	border: var(--color) solid;
+	border-width: 0 0.4rem 0 0;
+	box-shadow: inset rgba(from var(--color) r g b / 50%) 0 0 1.5rem;
+}
+
+@property --loading-ring-begin-angle {
+	syntax: "<angle>";
+	inherits: true;
+	initial-value: 0deg;
+}
+@property --loading-ring-end-angle {
+	syntax: "<angle>";
+	inherits: true;
+	initial-value: 0deg;
+}
+.loading-ring {
+	--size: 3rem;
+	--thickness: 0.2rem;
+	--loading-ring-begin-angle: 0;
+	--loading-ring-end-angle: 0;
+	pointer-events: none;
+	position: absolute;
+	width: var(--size);
+	height: var(--size);
+	border-radius: calc(infinity * 1px);
+	mask-image: radial-gradient(
+		transparent calc(var(--size) / 2 - var(--thickness)),
+		white calc(var(--size) / 2 - var(--thickness) + 1px)
+	);
+	background: conic-gradient(
+		transparent var(--loading-ring-begin-angle),
+		var(--color) var(--loading-ring-begin-angle),
+		var(--color) var(--loading-ring-end-angle),
+		transparent var(--loading-ring-end-angle)
+	);
+	animation: loading-ring-spin 1.5s linear infinite;
+}
+@keyframes loading-ring-spin {
+	0% {
+		--loading-ring-begin-angle: 0deg;
+		--loading-ring-end-angle: 0deg;
+		transform: rotate(0deg);
+	}
+	50% {
+		--loading-ring-begin-angle: 0deg;
+		--loading-ring-end-angle: 360deg;
+	}
+	100% {
+		--loading-ring-begin-angle: 360deg;
+		--loading-ring-end-angle: 360deg;
+		transform: rotate(360deg);
+	}
+}
+.modal-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	background: rgba(from var(--background-color) r g b / 75%);
+	transition: opacity 0.2s;
+}
+.modal-overlay-wrapper {
+	position: relative;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+.hidden-modal-overlay {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.toast {
+	z-index: 2;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	position: fixed;
+	align-self: center;
+	user-select: none;
+	top: 4rem;
+	filter: drop-shadow(#0006 0 0.3rem 0.5rem);
+	height: 2rem;
+	padding: 0 1rem 0 2rem;
+	color: var(--background-color);
+	background: var(--color);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	border: #8887 solid;
+	border-width: 0 1rem;
+	transition: all 0.25s;
+	&.information-toast {
+		color: black;
+		background-color: oklch(65% 40% 265deg);
+		border-color: oklch(80% 40% 265deg);
+	}
+	&.success-toast {
+		color: black;
+		background-color: oklch(75% 50% 140deg);
+		border-color: oklch(85% 50% 140deg);
+	}
+	&.warning-toast {
+		color: black;
+		background-color: oklch(92.5% 100% 85deg);
+		border-color: oklch(100% 100% 85deg);
+	}
+	&.error-toast {
+		color: black;
+		background-color: oklch(65% 50% 20deg);
+		border-color: oklch(80% 50% 20deg);
+	}
+}
+.toast.hidden-toast {
+	border-width: 0;
+	padding: 0;
+	width: 0;
+}
+.toast-close-button {
+	cursor: pointer;
+	font-size: 2rem;
+	margin-left: 2rem;
+}
+
+.work-in-progress {
+	height: 6rem;
+	z-index: 2;
+	&::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 6rem;
+		background: repeating-linear-gradient(
+			-45deg,
+			var(--color) 0rem,
+			var(--color) 0.4rem,
+			var(--background-color) 0.4rem,
+			var(--background-color) 0.8rem
+		);
+	}
+	&::after {
+		content: "WIP\00a0\00a0\00a0·\00a0\00a0\00a0Work In Progress\00a0\00a0\00a0·\00a0\00a0\00a0WIP";
+		position: absolute;
+		left: 0;
+		top: 0.75rem;
+		width: 100%;
+		height: 4.5rem;
+		line-height: 4.5rem;
+		text-align: center;
+		background: var(--color);
+		color: var(--background-color);
+		font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+		font-size: 1.5rem;
+	}
+}

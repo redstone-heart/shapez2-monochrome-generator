@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Shapez2 Monochrome Generator</title>
+		<link rel="icon" href="https://github.githubassets.com/favicons/favicon.svg" type="image/x-icon">
+		<link rel="stylesheet" href="./index.css"/>
+		<script src="./index.js"></script>
+		<style>
+			.main-image-panel {
+				display: flex;
+				flex-direction: column;
+			}
+
+			input[type="number"] {
+				text-align: center;
+			}
+			span.times-symbol {
+				font-size: 2rem;
+				line-height: 1.6rem;
+				height: 1.6rem;
+				color: var(--color);
+				background: var(--background-color);
+				box-shadow: inset var(--color) 0 -0.15rem;
+				user-select: none;
+			}
+			.platform-shape {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				margin-top: 0.125em;
+				margin-left: 0.2em;
+				line-height: 0.9em;
+				letter-spacing: 0.275em;
+				font-family: "Courier New", Courier, monospace;
+			}
+
+			.convertor-image-card {
+				width: calc((100% - 2.45rem) / 2);
+				display: flex;
+				flex-direction: column;
+			}
+			.image-convertor .convertor-image {
+				width: 100%;
+				cursor: pointer;
+				image-rendering: pixelated;
+				background: repeating-linear-gradient(
+					135deg,
+					transparent 0,
+					transparent var(--hatch-thickness),
+					#8883 calc(var(--hatch-thickness) + 0.1px),
+					#8883 calc(3 * var(--hatch-thickness))
+				);
+			}
+			.convertor-image-wrapper {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+			.image-convertor .convertor-arrow {
+				width: 1.25rem;
+				background: conic-gradient(
+					at 100% 50%,
+					transparent 225deg,
+					var(--color) 226deg,
+					var(--color) 314deg,
+					transparent 315deg
+				);
+				margin: 0 0.6rem;
+			}
+
+			.grayscale-range-picker {
+				flex-grow: 1;
+				user-select: none;
+				margin-right: 1rem;
+			}
+			.grayscale-bar {
+				height: 1em;
+				border: var(--color) solid;
+				border-width: 0 0.5rem;
+				background: linear-gradient(90deg, black, white);
+			}
+			.grayscale-indicator {
+				--position: 0.5;
+				position: relative;
+				cursor: pointer;
+				height: 0.7em;
+				width: 1em;
+				left: calc(var(--position) * (100% - 1rem));
+				margin-bottom: -0.7em;
+				background: conic-gradient(at center -1px, transparent 146deg, var(--color) 150deg, var(--color) 210deg, transparent 214deg);
+				transition: left 0.05s;
+				&::after {
+					content: "";
+					position: absolute;
+					width: 0.15em;
+					height: 1em;
+					left: 0.4em;
+					top: -1rem;
+					backdrop-filter: invert(100%);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<!-- <div class="work-in-progress"></div> -->
+		<h1><a href="https://github.com/redstone-heart/shapez2-monochrome-generator">Shapez2 Monochrome Generator</a></h1>
+		<hr/>
+		<h2>Quick Usage</h2>
+		<p>This page is an online static version of <a href="https://github.com/redstone-heart/shapez2-monochrome-generator">Shapez2 Monochrome Generator</a>. For a higher-performance, directly callable library tool, please visit the GitHub repository to clone the Python version of this project. If you like this project, please give it a star 😋.</p>
+		<p>Using this tool, you can convert any image to <a href="https://shapez2.com/">Shapez2</a> blueprint format and paste it in the game. However, due to the limitations of the building colors, the tool currently only generates grayscale images. The default generated blueprint needs to be viewed from a high altitude. When the trash placed on the platform turns black, the optimal viewing distance is reached. Enabling the game's anti-aliasing option can provide a better visual experience. If you need to generate images for near-distance viewing, you can modify the color palette in <a href="#custom-palette">Custom Palette</a> to adapt near-distance building colors.</p>
+		<div class="panel">
+			<header>Image Preview</header>
+			<div class="panel-item">
+				<label>Blueprint size:&ensp;</label>
+				<div class="horizontal-group">
+					<input type="number" id="blueprint-width-input" placeholder="width" value="54"/>
+					<span class="times-symbol">×</span>
+					<input type="number" id="blueprint-height-input" placeholder="height" value="54"/>
+					<script>
+						function setBlueprintSizeInputValues(width, height) {
+							const blueprintWidthInput = document.getElementById("blueprint-width-input");
+							const blueprintHeightInput = document.getElementById("blueprint-height-input");
+							blueprintWidthInput.value = width;
+							blueprintHeightInput.value = height;
+							blueprintWidthInput.dispatchEvent(new Event("change"));
+						}
+
+						const platformMetadatas = [[1, 1, 1.0], [1, 2, 0.6], [1, 3, 0.5], [1, 4, 0.4], [2, 2, 0.5], [2, 3, 0.4], [2, 4, 0.4], [3, 3, 0.4]];
+						const buttonHTMLs = [];
+						for (const metadata of platformMetadatas) {
+							const buttonContent = [...Array(metadata[0])].map(() => "■".repeat(metadata[1])).join(`<br/>`);
+							const width = 20 * metadata[1] - 6;
+							const height = 20 * metadata[0] - 6;
+							const buttonHTML = `
+								<button style="font-size: ${metadata[2]}rem;" onclick="setBlueprintSizeInputValues(${width}, ${height})">
+									<div class="platform-shape">${buttonContent}</div>
+								</button>
+							`;
+							buttonHTMLs.push(buttonHTML);
+						}
+						const buttonHTML = buttonHTMLs.join(`<div class="button-splitter"></div>`);
+						document.write(buttonHTML);
+					</script>
+				</div>
+			</div>
+			<div class="panel-item">
+				<label>Posterization preference:&ensp;</label>
+				 <div class="horizontal-group">
+					 <div class="checkbox-wrapper">
+						 <input type="checkbox" checked id="dithering-checkbox"/>
+					</div>
+					<label>Enable pixel dithering</label>
+				</div>
+			</div>
+			<div class="panel-item image-convertor">
+				<div class="convertor-image-card">
+					<canvas class="convertor-image" id="image-input-canvas"></canvas>
+					<p>Click the image placeholder above to select the original image to be processed.</p>
+				</div>
+				<div class="convertor-arrow"></div>
+				<div class="convertor-image-card">
+					<div class="modal-overlay-wrapper">
+						<canvas class="convertor-image" id="image-output-canvas"></canvas>
+						<div class="modal-overlay hidden-modal-overlay" id="output-loading-ring-overlay">
+							<div class="loading-ring"></div>
+						</div>
+					</div>
+					<p>Click the output image to copy the blueprint.</p>
+				</div>
+			</div>
+		</div>
+		<h2>Optional Settings</h2>
+		<p>You can adjust the grayscale output range. This means mapping the darkest pixels of the original image to the lower bound of the interval, and the brightest pixels to the upper bound.</p>
+		<div class="panel">
+			<header>Brightness Correction</header>
+			<p>Drag the slider below to clamp the grayscale output range. Click "Auto Detect" to automatically match the grayscale range to the currently used palette.</p>
+			<div class="panel-item">
+				<div class="grayscale-range-picker">
+					<div class="grayscale-bar"></div>
+					<div class="grayscale-indicator" style="--position: 0;"></div>
+					<div class="grayscale-indicator" style="--position: 1;"></div>
+				</div>
+				<button id="grayscale-auto-detect-button">Auto Detect</button>
+			</div>
+		</div>
+		<p>You can also use a custom palette to generate more personalized blueprint images. To create a palette, you need to provide two parameters: "Template blueprint" and "Grayscale values".</p>
+		<div class="panel">
+			<header id="custom-palette">Custom Palette</header>
+			<p>A template blueprint includes a sequence of buildings arranged from west to east. The easternmost and westernmost ends use any two arbitrary buildings to define the blueprint's boundaries, with each building in the grid between them representing an available grayscale (excluding the two ends). For example, "Trash A B C Trash" defines a palette template containing three grayscales: A, B, and C. You can construct a suitable palette structure in the game and paste its blueprint into the textarea below.</p>
+			<div class="panel-item textarea-wrapper">
+				<textarea id="palette-blueprint-input" style="resize: vertical;" placeholder="Paste your template palette blueprint here"></textarea>
+			</div>
+			<p>Additionally, you need to specify the grayscale value represented by each grid in the template blueprint. Grayscale values should be input as a JavaScript array within the range [0, 255] (e.g. "[0, 10, 20, ...]"). The number of grayscale values must match the quantity declared in the template blueprint.</p>
+			<div class="panel-item">
+				<input id="palette-grayscales-input" placeholder="Input your palette grayscales here"/>
+			</div>
+			<div class="panel-item">
+				<div></div>
+				<div class="horizontal-group">
+					<button id="custom-palette-button">Use Custom</button>
+					<div class="button-splitter"></div>
+					<button id="preset-binary-palette-button">Use Preset (Binary)</button>
+					<div class="button-splitter"></div>
+					<button id="preset-16colors-palette-button">Use Preset (16 Colors)</button>
+				</div>
+			</div>
+		</div>
+		
+		<script type="module">
+			// Palette loading.
+			function base64ToArrayBuffer(base64) {
+				const binary = atob(base64);
+				const binaryLength = binary.length;
+				const bytes = new Uint8Array(binaryLength);
+				for (let index = 0; index < binaryLength; ++index)
+					bytes[index] = binary.charCodeAt(index);
+				return bytes.buffer;
+			}
+			function gunzip(buffer) {
+				const decompressionStream = new DecompressionStream("gzip");
+				const writer = decompressionStream.writable.getWriter();
+				writer.write(buffer);
+				writer.close();
+				return new Response(decompressionStream.readable).arrayBuffer().then(buffer => new Uint8Array(buffer));
+			}
+			async function parseBlueprint(blueprint) {
+				const prefix = "SHAPEZ2-3-";
+				const base64 = blueprint.slice(prefix.length, -1);
+				const arrayBuffer = base64ToArrayBuffer(base64);
+				const decompressed = await gunzip(arrayBuffer);
+				return JSON.parse(new TextDecoder().decode(decompressed));
+			}
+			async function extractPalette(blueprint, grayscales) {
+				let blueprint_json = null;
+				try { blueprint_json = await parseBlueprint(blueprint); }
+				catch (error) { throw new Error("Failed to parse blueprint."); }
+				const buildings = blueprint_json.BP.Entries;
+				const groupedBuildings = {};
+				for (const building of buildings) {
+					const offset = building.X ?? 0;
+					if (!(offset in groupedBuildings))
+						groupedBuildings[offset] = [];
+					groupedBuildings[offset].push({...building, X: "#X", Y: "#Y"});
+				};
+
+				const palette = {};
+				const offsets = Object.keys(groupedBuildings).map(Number);
+				const minOffset = Math.min(...offsets);
+				const maxOffset = Math.max(...offsets);
+				if (grayscales.length != maxOffset - minOffset - 1)
+					throw new Error(`Length of grayscales (${grayscales.length}) doesn't match the length of template buildings (${maxOffset - minOffset - 1}) in blueprint.`);
+				for (let buildingOffset = minOffset + 1; buildingOffset < maxOffset; ++buildingOffset) {
+					const paletteIndex = buildingOffset - minOffset - 1;
+					const grayscale = grayscales[paletteIndex] / 255;
+					if (groupedBuildings[buildingOffset])
+						palette[grayscale] = JSON.stringify(groupedBuildings[buildingOffset], null, 0).slice(1, -1);
+					else
+						palette[grayscale] = "";
+				}
+				return palette;
+			}
+
+			const preset16ColorsPaletteMapping = await extractPalette(
+				"SHAPEZ2-3-H4sIAFc7m2gA/5yUX2uDMBTFv8tlj+7BP2u7PLZuUNiDTOkGow+h3rUXQpQkDkT87tPZgoVJryUQCPmdmxNychvYgfD9IPBgnYBo4MHVJYKAdUUqJ30ED7aHQvdbsXQSxBdQtxaXfQuerpQaJrAnWaLYVMOAfevBi3aG0HbCBj5BPC49yLr6mZH2FOO3rJTbaodGS7WThqR20HoDupiFvnUXGQQfZPDMrw3lR5xSPd2liv5UwaBKqMSNKaydosPxGUyaWzuYVXteVS7t8zmmV/7h/tgp9/2ujLyqivKkMO4dD0g/aKZFHEPh/AD2fEy2VLK+kfFoDnx2kpaKXEf4WRFOoFchuvBZ2v/kCUU075ar8SsxDIX3/EpuXFfsnrIY2+bmZPmvKEWdT0qeGY72XXsmLU29Q2Opb8d9z27bXwEGAKfFB+6/BQAA$",
+				[12, 24, 32, 42, 50, 64, 72, 82, 88, 94, 106, 120, 135, 160, 170, 180]
+			);
+			const presetBinaryPaletteMapping = await extractPalette(
+				"SHAPEZ2-3-H4sIANWxl2gA/4yPuwrDMAxF/+XS0R2S0WOaDtk6BFMoGUTrNgKjBj+GYPzvdQjdg0Agru6Bk2Ggm6ZtFbobdMYprouFRpfYvVg+UBieX9miniJBP8D11v88QElybl8IMy1WX9I+mIrCVaJnG2ox4w59bhTGyh89hbm3b0ouDhKtF3KGPJNEFJUP/VRce4A2VTcW8quxPvDmsgmX8hNAgAEAQJUqHfwAAAA=$",
+				[12, 132]
+			);
+			let usingPaletteMapping = preset16ColorsPaletteMapping;
+			
+
+
+
+
+			// Image processing & blueprint generating.
+			const imageInputCanvas = document.getElementById("image-input-canvas");
+			const imageOutputCanvas = document.getElementById("image-output-canvas");
+			const offscreenCanvas = new OffscreenCanvas(0, 0);
+
+			function showInputImage(image) {
+				const context = imageInputCanvas.getContext("2d");
+				context.imageSmoothingEnabled = false;
+				context.webkitImageSmoothingEnabled = false;
+				context.mozImageSmoothingEnabled = false;
+				imageInputCanvas.width = image.width;
+				imageInputCanvas.height = image.height;
+				imageOutputCanvas.width = image.width;
+				imageOutputCanvas.height = image.height;
+				context.drawImage(image, 0, 0);
+			}
+			function showOutputImage(grayscale, size) {
+				const [width, height] = size;
+				const [outputWidth, outputHeight] = [imageOutputCanvas.width, imageOutputCanvas.height];
+
+				const context = imageOutputCanvas.getContext("2d");
+				context.clearRect(0, 0, imageOutputCanvas.width, imageOutputCanvas.height);
+				context.imageSmoothingEnabled = false;
+				context.webkitImageSmoothingEnabled = false;
+				context.mozImageSmoothingEnabled = false;
+				const imageData = context.createImageData(width, height);
+				for (let grayscaleIndex = 0; grayscaleIndex < grayscale.length; ++grayscaleIndex) {
+					const gray = grayscale[grayscaleIndex] * 255;
+					const index = grayscaleIndex * 4;
+					imageData.data[index] = gray;
+					imageData.data[index + 1] = gray;
+					imageData.data[index + 2] = gray;
+					imageData.data[index + 3] = 255;
+				}
+				offscreenCanvas.width = width;
+				offscreenCanvas.height = height;
+				offscreenCanvas.getContext("2d").putImageData(imageData, 0, 0);
+				
+				const widthScale = outputWidth / width;
+				const heightScale = outputHeight / height;
+				if (widthScale > heightScale)
+					context.drawImage(
+						offscreenCanvas, 0, 0, width, height,
+						(outputWidth - width * heightScale) / 2, 0, width * heightScale, height * heightScale
+					);
+				else
+					context.drawImage(
+						offscreenCanvas, 0, 0, width, height,
+						0, (outputHeight - height * widthScale) / 2, width * widthScale, height * widthScale
+					);
+			}
+
+			async function loadImage(imageFile) {
+				return new Promise((resolve, reject) => {
+					const image = new Image();
+					image.onload = () => {
+						showInputImage(image);
+						const context = imageInputCanvas.getContext("2d");
+						const imageData = context.getImageData(0, 0, image.width, image.height);
+						resolve({imageData: imageData, width: imageData.width, height: imageData.height});
+					};
+					image.onerror = reject;
+					image.src = URL.createObjectURL(imageFile);
+				});
+			}
+			function toGrayscale(imageData, size) {
+				const [width, height] = size;
+				const grayscale = new Float64Array(width * height);
+				for (let index = 0; index < imageData.data.length; index += 4)
+					grayscale[index / 4] = (0.299 * imageData.data[index] + 0.587 * imageData.data[index + 1] + 0.114 * imageData.data[index + 2]) / 255;
+				return grayscale;
+			}
+			function meanPool(grayscale, size, outputSize) {
+				const [width, height] = size;
+				const [outWidth, outHeight] = outputSize;
+				const blockWidth = width / outWidth;
+				const blockHeight = height / outHeight;
+				const thumbnail = new Float64Array(outWidth * outHeight);
+				for (let y = 0; y < outHeight; ++y)
+					for (let x = 0; x < outWidth; ++x) {
+						const yStart = Math.floor(y * blockHeight);
+						const yEnd = Math.ceil((y + 1) * blockHeight);
+						const xStart = Math.floor(x * blockWidth);
+						const xEnd = Math.ceil((x + 1) * blockWidth);
+						let sum = 0;
+						let count = 0;
+						for (let by = yStart; by < yEnd; ++by)
+							for (let bx = xStart; bx < xEnd; ++bx)
+								if (grayscale[by * width + bx] !== undefined) {
+									sum += grayscale[by * width + bx];
+									++count;
+								}
+						thumbnail[y * outWidth + x] = sum / count;
+					}
+				return thumbnail;
+			}
+			function brightnessRemap(grayscale, size, minLightness, maxLightness) {
+				const min = grayscale.reduce((a, b) => a < b ? a : b);
+				const max = grayscale.reduce((a, b) => a > b ? a : b);
+				const range = max - min;
+				return grayscale.map(pixel => minLightness + (maxLightness - minLightness) * (pixel - min) / range);
+			}
+			function posterize(grayscale, size, palette) {
+				return grayscale.map(pixel => palette.reduce((a, b) => Math.abs(b - pixel) < Math.abs(a - pixel) ? b : a));
+			}
+			function dither(grayscale, size, palette) {
+				const [width, height] = size;
+				const dithered = new Float64Array(grayscale);
+				for (let y = 0; y < height; ++y)
+					for (let x = 0; x < width; ++x) {
+						const index = y * width + x;
+						const oldPixel = dithered[index];
+						const newPixel = palette.reduce((a, b) => Math.abs(b - oldPixel) < Math.abs(a - oldPixel) ? b : a);
+						const quantError = oldPixel - newPixel;
+						dithered[index] = newPixel;
+						if (x + 1 < width)
+							dithered[index + 1] += quantError * 7 / 16;
+						if (y + 1 < height && x > 0)
+							dithered[(y + 1) * width + (x - 1)] += quantError * 3 / 16;
+						if (y + 1 < height)
+							dithered[(y + 1) * width + x] += quantError * 5 / 16;
+						if (y + 1 < height && x + 1 < width)
+							dithered[(y + 1) * width + (x + 1)] += quantError * 1 / 16;
+					}
+				return dithered;
+			}
+			
+			let processingImageFile = null;
+			const cachedImages = {};
+			const processSteps = {
+				INITIALIZATION		: 0,
+				LOAD_IMAGE			: 1,
+				GRAYSCALING			: 2,
+				MEAN_POOLING		: 3,
+				BRIGHTNESS_REMAPPING: 4,
+				POSTERIZATION		: 5,
+			};
+			async function processImage(imageFile, outputSize, brightnessCorrection, paletteMapping, dithering, skipSteps = processSteps.INITIALIZATION) {
+				if (skipSteps < 1)
+					cachedImages.originalImage = await loadImage(imageFile);
+				const size = [cachedImages.originalImage.width, cachedImages.originalImage.height];
+				if (skipSteps < 2)
+					cachedImages.grayscaled = toGrayscale(cachedImages.originalImage.imageData, size);
+				if (skipSteps < 3)
+					cachedImages.meanPooled = meanPool(cachedImages.grayscaled, size, outputSize);
+				if (skipSteps < 4)
+					cachedImages.brightnessCorrected = brightnessRemap(cachedImages.meanPooled, size, ...brightnessCorrection);
+				if (skipSteps < 5) {
+					const palette = Object.keys(paletteMapping).map(Number).sort((a, b) => a - b);
+					cachedImages.posterized = (dithering ? dither : posterize)(cachedImages.brightnessCorrected, outputSize, palette);
+				}
+				showOutputImage(cachedImages.posterized, outputSize);
+				return cachedImages.posterized;
+			}
+
+			function arrayBufferToBase64(buffer) {
+				const binary = new Uint8Array(buffer);
+				const binaryLength = binary.length;
+				let base64 = "";
+				for (let index = 0; index < binaryLength; ++index)
+					base64 += String.fromCharCode(binary[index]);
+				return btoa(base64);
+			}
+			function gzip(buffer) {
+				const compressionStream = new CompressionStream("gzip");
+				const writer = compressionStream.writable.getWriter();
+				writer.write(buffer);
+				writer.close();
+				return new Response(compressionStream.readable).arrayBuffer().then(buffer => new Uint8Array(buffer));
+			}
+			async function exportBlueprint(image, size, paletteMapping) {
+				const [width, height] = size;
+				const entries = [];
+				for (let y = 0; y < height; ++y)
+					for (let x = 0; x < width; ++x) {
+						const grayscale = image[y * width + x];
+						const buildingTemplate = paletteMapping[grayscale];
+						if (buildingTemplate)
+							entries.push(buildingTemplate.replaceAll('"#X"', x).replaceAll('"#Y"', y));
+					}
+				const blueprintTemplate = '{"V":1122,"BP":{"$type":"Building","Icon":{"Data":[null,null,null,null]},"Entries":[#],"BinaryVersion":1122}}';
+				const blueprintJson = blueprintTemplate.replace("#", entries.join(","));
+				const compressed = await gzip(new TextEncoder().encode(blueprintJson));
+				const base64 = arrayBufferToBase64(compressed);
+				return `SHAPEZ2-3-${base64}$`;
+			}
+			
+
+
+
+
+			// Event binding.
+			function getOptions() {
+				const [width, height] = getBlueprintSize();
+				if (!(width > 0 && height > 0))
+					throw new Error(`Invalid blueprint size.`);
+				return {
+					imageFile: processingImageFile,
+					size: [width, height],
+					dithering: document.getElementById("dithering-checkbox").checked,
+					brightnessRange: getGrayscaleRange(),
+					paletteMapping: usingPaletteMapping
+				};
+			}
+			async function updateImage(skipSteps = processSteps.INITIALIZATION, ignoreError = true) {
+				try {
+					const options = getOptions();
+					await processImage(
+						options.imageFile,
+						options.size,
+						options.brightnessRange,
+						options.paletteMapping,
+						options.dithering,
+						skipSteps
+					);
+				}
+				catch (error) {
+					if (!ignoreError)
+						throw Error();
+				}
+			}
+			window.updateImage = updateImage;
+
+
+
+			const blueprintWidthInput = document.getElementById("blueprint-width-input");
+			const blueprintHeightInput = document.getElementById("blueprint-height-input");
+			blueprintWidthInput.addEventListener("change", () => setBlueprintSizeInputValues(...getBlueprintSize()));
+			blueprintHeightInput.addEventListener("change", () => setBlueprintSizeInputValues(...getBlueprintSize()));
+			function getBlueprintSize() {
+				const width = blueprintWidthInput.value;
+				const height = blueprintHeightInput.value;
+				return [width, height].map(Number);
+			}
+			function setBlueprintSizeInputValues(width, height) {
+				blueprintWidthInput.value = width;
+				blueprintHeightInput.value = height;
+				const originalWidth = cachedImages?.originalImage?.width ?? 0;
+				const originalHeight = cachedImages?.originalImage?.height ?? 0;
+				if (width > 234 || height > 234)
+					showWarningToast("Blueprint is too large, please make sure you really want to use this size.");
+				updateImage(processSteps.GRAYSCALING);
+			}
+
+
+
+			document.getElementById("dithering-checkbox").addEventListener("change", () => updateImage(processSteps.MEAN_POOLING));
+
+
+
+			const grayscaleIndicators = document.getElementsByClassName("grayscale-indicator");
+			for (const indicator of grayscaleIndicators)
+				indicator.addEventListener("mousedown", event => {
+					const thisIndicator = event.target;
+					const bar = thisIndicator.parentElement;
+					const barRectangle = bar.getBoundingClientRect();
+					const onMouseMove = event => {
+						let position = (event.clientX - barRectangle.left) / barRectangle.width;
+						position = Math.max(0, Math.min(1, position));
+						thisIndicator.style.setProperty("--position", position);
+						updateImage(processSteps.MEAN_POOLING);
+					};
+					document.addEventListener("mousemove", onMouseMove);
+					document.addEventListener("mouseup", () => document.removeEventListener("mousemove", onMouseMove));
+				});
+
+			function getGrayscaleRangeIndicators() {
+				let lowerIndicator = grayscaleIndicators[0];
+				let higherIndicator = grayscaleIndicators[1];
+				const lowerGrayscale = parseFloat(lowerIndicator.style.getPropertyValue("--position"));
+				const higherGrayscale = parseFloat(higherIndicator.style.getPropertyValue("--position"));
+				if (lowerGrayscale > higherGrayscale)
+					[lowerIndicator, higherIndicator] = [higherIndicator, lowerIndicator];
+				return [lowerIndicator, higherIndicator];
+			}
+			function getGrayscaleRange() {
+				const [lowerIndicator, higherIndicator] = getGrayscaleRangeIndicators();
+				const lowerGrayscale = parseFloat(lowerIndicator.style.getPropertyValue("--position"));
+				const higherGrayscale = parseFloat(higherIndicator.style.getPropertyValue("--position"));
+				return [lowerGrayscale, higherGrayscale];
+			}
+			function setGrayscaleRange(minGrayscale, maxGrayscale) {
+				const [lowerIndicator, higherIndicator] = getGrayscaleRangeIndicators();
+				lowerIndicator.style.setProperty("--position", minGrayscale);
+				higherIndicator.style.setProperty("--position", maxGrayscale);
+			}
+
+			const grayscaleAutoDetectButton = document.getElementById("grayscale-auto-detect-button");
+			grayscaleAutoDetectButton.addEventListener("click", () => {
+				const palette = Object.keys(usingPaletteMapping).map(Number);
+				const minGrayscale = Math.min(...palette);
+				const maxGrayscale = Math.max(...palette);
+				setGrayscaleRange(minGrayscale, maxGrayscale);
+				updateImage(processSteps.MEAN_POOLING);
+				if (maxGrayscale - minGrayscale < 0.1)
+					showWarningToast("Brightness range is too narrow, which may result in severe distortion.");
+			});
+			grayscaleAutoDetectButton.click();
+
+
+
+			imageInputCanvas.addEventListener("click", () => {
+				const input = document.createElement("input");
+				input.type = "file";
+				input.accept = "image/*,.image";
+				input.onchange = event => {
+					const file = event.target.files[0];
+					if (file) {
+						processingImageFile = file;
+						updateImage();
+					}
+				};
+				input.click();
+			});
+			imageOutputCanvas.addEventListener("click", async () => {
+				const outputLoadingRingOverlay = document.getElementById("output-loading-ring-overlay");
+				const [width, height] = getBlueprintSize();
+				if (!(width > 0 && height > 0)) {
+					showErrorToast("Invalid blueprint size.");
+					return;
+				}
+				try {
+					await updateImage(processSteps.POSTERIZATION, false);
+				}
+				catch (error) {
+					showErrorToast("No image in workspace.");
+					return;
+				}
+				outputLoadingRingOverlay.classList.remove("hidden-modal-overlay");
+				const finishLoading = (message, toastType = "success") => {
+					setTimeout(() => {
+						toast(message, toastType);
+						outputLoadingRingOverlay.classList.add("hidden-modal-overlay");
+					}, 250);
+				};
+				setTimeout(() => {
+					exportBlueprint(cachedImages.posterized, [width, height], usingPaletteMapping)
+						.then(blueprint => {
+							navigator.clipboard.writeText(blueprint)
+								.then(() => finishLoading("Copy blueprint to clipboard successfully."))
+								.catch(() => finishLoading("Failed to write clipboard.", "error"));
+						})
+						.catch(error => finishLoading(`Failed to generate blueprint: ${error.message}`, "error"));
+				});
+			});
+
+
+
+			const paletteBlueprintInput = document.getElementById("palette-blueprint-input");
+			const paletteGrayscalesInput = document.getElementById("palette-grayscales-input");
+			const customPaletteButton = document.getElementById("custom-palette-button");
+			const presetBinaryPaletteButton = document.getElementById("preset-binary-palette-button");
+			const preset16ColorsPaletteButton = document.getElementById("preset-16colors-palette-button");
+			customPaletteButton.addEventListener("click", async () => {
+				try {
+					const paletteBlueprint = paletteBlueprintInput.value;
+					let grayscales = null;
+					try {
+						grayscales = eval(paletteGrayscalesInput.value);
+						if (grayscales.length < 2 || grayscales[0] < 0 || grayscales[grayscales.length - 1] > 255)
+							throw new Error();
+						for (let grayscaleIndex = 1; grayscaleIndex < grayscales.length; ++grayscaleIndex)
+							if (grayscales[grayscaleIndex - 1] >= grayscales[grayscaleIndex])
+								throw new Error();
+					}
+					catch (error) {
+						throw new Error("Grayscales must be an increasing uint8 array with at least 2 values.");
+					}
+					const paletteMapping = await extractPalette(paletteBlueprint, grayscales);
+					usingPaletteMapping = paletteMapping;
+					grayscaleAutoDetectButton.click();
+					showSuccessToast("Custom palette applied successfully.");
+				}
+				catch (error) {
+					showErrorToast(error.message);
+				}
+			});
+			presetBinaryPaletteButton.addEventListener("click", () => {
+				usingPaletteMapping = presetBinaryPaletteMapping;
+				grayscaleAutoDetectButton.click();
+				showSuccessToast("Binary palette has been enabled.");
+			});
+			preset16ColorsPaletteButton.addEventListener("click", () => {
+				usingPaletteMapping = preset16ColorsPaletteMapping;
+				grayscaleAutoDetectButton.click();
+				showSuccessToast("Default palette has been enabled.");
+			});
+		</script>
+	</body>
+</html>
