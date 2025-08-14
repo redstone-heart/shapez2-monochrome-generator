@@ -1,4 +1,4 @@
-# shapez2-monochrome-generator
+# Shapez2 Monochrome Generator
 
 This tool can convert any image to Shapez2 blueprint format and you can paste it in the game.
 
